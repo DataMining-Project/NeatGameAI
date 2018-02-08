@@ -4,12 +4,17 @@
     {
         int WindowWidth { get; }
         int WindowHeight { get; }
-        int Score { get; }
+        int NeuralInputsCount { get; }
+        int NeuralOutputsCount { get; }
+        bool HasRandomEvents { get; }        
+        double Score { get; }
         bool IsGameOver { get; }
         int[] GameMoves { get; }
 
         int[][] GetCurrentState(out bool over);
+        double[] GetNeuralInputs();
         void MakeMove(int move);
-        void RestartGame();
+
+        IGame NewGame();
     }
 }

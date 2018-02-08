@@ -16,6 +16,7 @@ namespace NeatGameAI.Games.Breakout
         private int blocksSpaceTop;
         private int movesPerBallMove;
         private int movesUntilBallMove;
+        private int blocksLeft;
 
         private int[][] gameState;
         private Rectangle ball;
@@ -28,12 +29,19 @@ namespace NeatGameAI.Games.Breakout
 
         public int WindowWidth { get; private set; }
         public int WindowHeight { get; private set; }
-        public int Score { get; private set; }
+        public int NeuralInputsCount { get; private set; }
+        public int NeuralOutputsCount { get; private set; }
+        public bool HasRandomEvents { get; private set; }
+        public double Score { get; private set; }
         public bool IsGameOver { get; private set; }
         public int[] GameMoves { get; private set; }
 
         public BreakoutGame()
         {
+            NeuralInputsCount = 3;
+            NeuralOutputsCount = 3;
+            HasRandomEvents = false;
+
             platformWidth = 12;
             blockRows = 6;
             blockCols = 10;
@@ -42,13 +50,16 @@ namespace NeatGameAI.Games.Breakout
             blocksSpaceTop = 6;
 
             movesPerBallMove = 2;
+            movesUntilBallMove = movesPerBallMove;
 
-            WindowWidth = blockCols * blockRows;
+            blocksLeft = blockCols * blockRows;
+            WindowWidth = blockCols * blocksWidth;
             WindowHeight = 40;
             Score = 0;
             IsGameOver = false;
             GameMoves = Enum.GetValues(typeof(BreakoutMove)).Cast<int>().ToArray();
-            RestartGame();
+
+            InitializeGame();
         }
 
         public int[][] GetCurrentState(out bool gameOver)
@@ -57,8 +68,21 @@ namespace NeatGameAI.Games.Breakout
             return gameState;
         }
 
+        public double[] GetNeuralInputs()
+        {
+            return new double[]
+            {
+                (double)ball.Y / WindowHeight,
+                (double)ball.X / WindowWidth,
+                (double)(platform.X + platform.Width / 2) / WindowWidth
+            };
+        }
+
         public void MakeMove(int move)
         {
+            if (blocksLeft == 0)
+                IsGameOver = true;
+
             if (IsGameOver)
                 return;
 
@@ -74,6 +98,7 @@ namespace NeatGameAI.Games.Breakout
                 case BreakoutMove.None:
                     break;
                 case BreakoutMove.Left:
+                    //Score += 1;
                     if (platform.X > 0)
                     {
                         gameState[platform.Y][platform.X + platformWidth - 1] = 0;
@@ -88,6 +113,7 @@ namespace NeatGameAI.Games.Breakout
                     }
                     break;
                 case BreakoutMove.Right:
+                    //Score += 1;
                     if (platform.X + platformWidth < WindowWidth)
                     {
                         gameState[platform.Y][platform.X] = 0;
@@ -103,6 +129,8 @@ namespace NeatGameAI.Games.Breakout
                     break;
             }
 
+            Score += ((WindowWidth - ((platform.X + platformWidth / 2) - ball.X)) / (double)WindowWidth) * 10;
+
             movesUntilBallMove--;
 
             if (movesUntilBallMove == 0)
@@ -110,6 +138,12 @@ namespace NeatGameAI.Games.Breakout
                 MoveBall();
                 movesUntilBallMove = movesPerBallMove;
             }
+        }
+
+        private void UpdateBrokenBlocks(int blocks)
+        {
+            blocksLeft -= blocks;
+            Score += blocks * 3;
         }
 
         private void MoveBall()
@@ -300,7 +334,7 @@ namespace NeatGameAI.Games.Breakout
                 }
             }
 
-            Score += blocksToRemove.Count * 100;
+            UpdateBrokenBlocks(blocksToRemove.Count);
         }
 
         private void CalculateNewBallPosition(Rectangle oldBall, ref Rectangle newBall, BallDirection ballDirection, BallAngle ballAngle)
@@ -603,7 +637,7 @@ namespace NeatGameAI.Games.Breakout
                 }
             }
 
-            Score += blocksToRemove.Count * 100;
+            UpdateBrokenBlocks(blocksToRemove.Count);
         }
 
         public void DrawBallOnNewPosition(Rectangle oldBall, Rectangle newBall)
@@ -627,11 +661,8 @@ namespace NeatGameAI.Games.Breakout
             }
         }
 
-        public void RestartGame()
+        private void InitializeGame()
         {
-            Score = 0;
-            IsGameOver = false;
-            movesUntilBallMove = movesPerBallMove;
             int middleX = WindowWidth / 2;
 
             // Create platform
@@ -699,6 +730,16 @@ namespace NeatGameAI.Games.Breakout
             {
                 gameState[platform.Y][platform.X + i] = 3;
             }
+        }
+
+        public IGame NewGame()
+        {
+            return new BreakoutGame();
+        }
+
+        IGame IGame.NewGame()
+        {
+            return NewGame();
         }
 
         enum BallAngle
