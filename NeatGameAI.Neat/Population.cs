@@ -18,6 +18,7 @@ namespace NeatGameAI.Neat
         {
             Config = config;
             FitnessEvaluator = fitnessEvaluator;
+            Genomes = new List<Genome>();
             Generation = 0;
             TopFitness = 0;
         }
@@ -34,7 +35,7 @@ namespace NeatGameAI.Neat
         {
             var newPopulation = new List<Genome>();
 
-            // Add elites to the new population
+            //// Add elites to the new population
             int elitesCount = (int)(Genomes.Count * Config.ElitismPercentange);
             for (int i = 0; i < elitesCount; i++)
             {
@@ -57,7 +58,7 @@ namespace NeatGameAI.Neat
             }
 
             // Evaluate new generation Fitness
-            foreach (var genome in Genomes)
+            foreach (var genome in newPopulation)
             {
                 FitnessEvaluator(genome);
             }

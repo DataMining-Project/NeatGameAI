@@ -299,6 +299,8 @@ namespace NeatGameAI.Games.Breakout
                     }
                 }
             }
+
+            Score += blocksToRemove.Count * 100;
         }
 
         private void CalculateNewBallPosition(Rectangle oldBall, ref Rectangle newBall, BallDirection ballDirection, BallAngle ballAngle)
@@ -600,6 +602,8 @@ namespace NeatGameAI.Games.Breakout
                     }
                 }
             }
+
+            Score += blocksToRemove.Count * 100;
         }
 
         public void DrawBallOnNewPosition(Rectangle oldBall, Rectangle newBall)

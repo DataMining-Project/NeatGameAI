@@ -44,7 +44,7 @@
             EnableMutateProbability = 0.2;
             DisableMutateProbability = 0.4;
 
-            FindRandomEnabledConnectionMaxAttepts = 100000;
+            FindRandomEnabledConnectionMaxAttepts = 1000;
             FindTwoNodesToConnectMaxAttempts = 100;
         }
     }

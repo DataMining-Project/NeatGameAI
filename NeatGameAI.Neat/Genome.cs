@@ -22,7 +22,7 @@ namespace NeatGameAI.Neat
             Connections = new List<ConnectionGene>();
             Nodes = new List<NodeGene>();
 
-            InitializeNodes();            
+            InitializeNodes();
         }
 
         private void InitializeNodes()
@@ -55,15 +55,30 @@ namespace NeatGameAI.Neat
             var outputs = new double[Config.OutputNodesCount];
 
             var outputsMap = new double[Nodes.Count]; // For saving the computed outputs. Prevents recomputation
-            for (int i = 0; i < Config.OutputNodesCount; i++)
+            for (int i = 0; i < Config.InputNodesCount; i++)
             {
-                outputsMap[i] = double.NaN;
+                outputsMap[i] = inputs[i];
+            }
+
+            foreach (var node in Nodes)
+            {
+                double sum = 0;
+                if (node.Id >= Config.InputNodesCount)
+                {
+                    foreach (var con in node.Incoming)
+                    {
+                        if (con.Enabled)
+                        {
+                            sum += outputsMap[con.Source] * con.Weight;
+                        }
+                    }
+                    outputsMap[node.Id] = Sigmoid(sum);
+                }
             }
 
             for (int i = 0; i < Config.OutputNodesCount; i++)
             {
-                int neuronId = Config.InputNodesCount + i;
-                outputs[i] = CalculateNeuronOutput(ref inputs, ref outputsMap, neuronId);
+                outputs[i] = outputsMap[Nodes.Count - Config.OutputNodesCount + i];
             }
 
             return outputs;
@@ -89,14 +104,14 @@ namespace NeatGameAI.Neat
 
                     outputsMap[connection.Source] = output;
                     sum += output * connection.Weight;
-                }                
+                }
             }
 
             return Sigmoid(sum);
         }
 
         public void Mutate()
-        {            
+        {
             if (random.NextDouble() <= Config.NodeMutateProbability)
                 AddNodeMutation();
             if (random.NextDouble() <= Config.ConnectionMutateProbability)
@@ -140,62 +155,48 @@ namespace NeatGameAI.Neat
         {
             var connection = new ConnectionGene(source, destination, weight);
             Connections.Add(connection);
-            Nodes[source].Outgoing.Add(connection);
             Nodes[destination].Incoming.Add(connection);
+        }
+
+        private void AddNewConnection(ConnectionGene con)
+        {
+            var connection = new ConnectionGene(con);
+            Connections.Add(connection);
+            Nodes[con.Destination].Incoming.Add(connection);
         }
 
         private void AddConnectionMutation()
         {
             // Pick two nodes that are not connected and are not connected and are not reversed. First can't be output and second can't be input.
-            NodeGene sourceNode = null;
-            NodeGene destinationNode = null;
-
             int sourceNodeId = 0;
-            int destinationNodeId = 0;
-
-            int attempts = 0;
-            int maxAttempts = Config.FindTwoNodesToConnectMaxAttempts;
-            bool foundNodes = false;
-            while (attempts < maxAttempts)
+            int randInput = random.Next(0, Config.InputNodesCount);
+            if (Config.InputNodesCount + Config.OutputNodesCount < Nodes.Count)
             {
-                attempts++;
+                int randHidden = random.Next(Config.InputNodesCount + Config.OutputNodesCount, Nodes.Count);
+                sourceNodeId = random.Next(0, 2) == 0 ? randInput : randHidden;
+            }
+            else sourceNodeId = randInput;
 
-                // Get source node that is not from output (from input or hidden(if there are any))
-                int randInput = random.Next(0, Config.InputNodesCount);
-                if (Config.InputNodesCount + Config.OutputNodesCount < Nodes.Count)
+            int destinationNodeId = random.Next(Config.InputNodesCount, Nodes.Count);
+
+            if (sourceNodeId < destinationNodeId)
+            {
+                bool areConnected = false;
+                foreach (var con in Nodes[destinationNodeId].Incoming)
                 {
-                    int randHidden = random.Next(Config.InputNodesCount + Config.OutputNodesCount, Nodes.Count);
-                    sourceNodeId = random.Next(0, 2) == 0 ? randInput : randHidden;
-                }
-                else sourceNodeId = randInput;
-
-                destinationNodeId = random.Next(Config.InputNodesCount, Nodes.Count);
-
-                if (sourceNodeId < destinationNodeId)
-                {
-                    bool areConnected = false;
-                    foreach (var con in Nodes[sourceNodeId].Outgoing)
+                    if (con.Source == sourceNodeId)
                     {
-                        if (con.Destination == destinationNodeId)
-                        {
-                            areConnected = true;
-                            break;
-                        }
-                    }
-
-                    if (!areConnected)
-                    {
-                        foundNodes = true;
+                        areConnected = true;
                         break;
                     }
                 }
-            }
 
-            if (foundNodes)
-            {
-                // Connection is possible between the two
-                AddNewConnection(sourceNode.Id, destinationNode.Id, RandomWeight());
-            }            
+                if (!areConnected)
+                {
+                    // Connection is possible between the two
+                    AddNewConnection(sourceNodeId, destinationNodeId, RandomWeight());
+                }
+            }
         }
 
         private void DisableConnectionMutation()
@@ -268,26 +269,62 @@ namespace NeatGameAI.Neat
                 // Add connection with highest innovation
                 if (p1Con.Innovation < p2Con.Innovation)
                 {
-                    childGenome.Connections.Add(new ConnectionGene(p2Con));
+                    if (!p2Con.Enabled)
+                    {
+                        p2ConIndex++;
+                        continue;
+                    }
+
+                    childGenome.AddNewConnection(p2Con);
                     p2ConIndex++;
                 }
                 else // If same innovation parent1 connection is added, who has the higher fitness
-                {                    
-                    childGenome.Connections.Add(new ConnectionGene(p1Con));
+                {
+                    if (!p1Con.Enabled)
+                    {
+                        p1ConIndex++;
+                        continue;
+                    }
+
+                    childGenome.AddNewConnection(p1Con);
                     p1ConIndex++;
                 }
             }
 
             while (p1ConIndex < parent1.Connections.Count)
             {
-                childGenome.Connections.Add(new ConnectionGene(parent1.Connections[p1ConIndex++]));
+                var p1Con = parent1.Connections[p1ConIndex];
+
+                if (!p1Con.Enabled)
+                {
+                    p1ConIndex++;
+                    continue;
+                }
+
+                childGenome.AddNewConnection(p1Con);
+                p1ConIndex++;
             }
             while (p2ConIndex < parent2.Connections.Count)
             {
-                childGenome.Connections.Add(new ConnectionGene(parent2.Connections[p2ConIndex++]));
+                var p2Con = parent2.Connections[p2ConIndex];
+
+                if (!p2Con.Enabled)
+                {
+                    p2ConIndex++;
+                    continue;
+                }
+
+                childGenome.AddNewConnection(p2Con);
+                p2ConIndex++;
             }
 
             return childGenome;
+        }
+
+        public void Invalidate()
+        {
+            Connections = null;
+            Nodes = null;
         }
     }
 }

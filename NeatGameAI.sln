@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeatGameAI.GameTester", "Ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeatGameAI.Neat", "NeatGameAI.Neat\NeatGameAI.Neat.csproj", "{7B4792B0-8E4C-400E-BC24-EC3E850BEAC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeatGameAI.CUI", "NeatGameAI.CUI\NeatGameAI.CUI.csproj", "{4970A432-141F-41C5-BE01-288DB952F4C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7B4792B0-8E4C-400E-BC24-EC3E850BEAC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B4792B0-8E4C-400E-BC24-EC3E850BEAC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B4792B0-8E4C-400E-BC24-EC3E850BEAC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4970A432-141F-41C5-BE01-288DB952F4C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4970A432-141F-41C5-BE01-288DB952F4C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4970A432-141F-41C5-BE01-288DB952F4C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4970A432-141F-41C5-BE01-288DB952F4C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

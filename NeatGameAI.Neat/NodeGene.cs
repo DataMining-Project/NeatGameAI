@@ -7,7 +7,6 @@ namespace NeatGameAI.Neat
         public int Id { get; set; }
         public NodeType Type { get; set; }
         public List<ConnectionGene> Incoming { get; set; }
-        public List<ConnectionGene> Outgoing { get; set; }
 
 
         public NodeGene(int id, NodeType type)
@@ -15,7 +14,6 @@ namespace NeatGameAI.Neat
             Id = id;
             Type = type;
             Incoming = new List<ConnectionGene>();
-            Outgoing = new List<ConnectionGene>();
         }
     }
 }
