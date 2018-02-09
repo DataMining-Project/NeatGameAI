@@ -69,12 +69,12 @@ namespace NeatGameAI.Games.Evolution
 
         public List<NeatGenome> LoadPopulation(XmlReader xr)
         {
-            throw new NotImplementedException();
+            return NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, new NeatGenomeFactory(InputCount, OutputCount, neatGenomeParams));
         }
 
         public void SavePopulation(XmlWriter xw, IList<NeatGenome> genomeList)
         {
-            throw new NotImplementedException();
+            NeatGenomeXmlIO.WriteComplete(xw, genomeList, false);
         }
 
         public IGenomeFactory<NeatGenome> CreateGenomeFactory()

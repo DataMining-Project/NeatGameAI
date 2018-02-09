@@ -5,6 +5,7 @@ using SharpNeat.EvolutionAlgorithms;
 using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -12,122 +13,94 @@ namespace NeatGameAI.CUI
 {
     class Program
     {
-        static NeatEvolutionAlgorithm<NeatGenome> neatAlgo;
-
         static void Main(string[] args)
         {
-            TrainBreakoutGame();
-        }
-
-        private static void TrainBreakoutGame()
-        {
-            GameExperiment experiment = new GameExperiment(new BreakoutGame());
-            experiment.Initialize("Breakout");
-
-            neatAlgo = experiment.CreateEvolutionAlgorithm();
-            neatAlgo.UpdateEvent += new EventHandler(NeatAlgoUpdateEvent);
-
-            neatAlgo.StartContinue();
-
-            Console.ReadLine();
-
-            neatAlgo.Stop();
-
-            // Get best genome
-            var genome = neatAlgo.CurrentChampGenome;
-            var genomeDecoder = experiment.CreateGenomeDecoder();
-            var phenome = genomeDecoder.Decode(genome);
-
-            var score = ShowAIPlay(phenome);
-            Console.WriteLine($"Fitness: {score}");
-
-            Console.ReadKey();
-        }
-
-        private static double ShowAIPlay(IBlackBox network)
-        {
-            var game = new BreakoutGame();
-
-            Console.WindowWidth = game.WindowWidth;
-            Console.WindowHeight = game.WindowHeight + 5;
-
-            while (!game.IsGameOver)
+            bool exit = false;
+            while (!exit)
             {
-                // Get game state
-                var gameState = game.GetCurrentState(out _);
+                int choosenOption = ChooseGameMenu(out exit);
+                if (exit) break;
 
-                PrintGameState(game, gameState);
-
-                var nnInputs = game.GetNeuralInputs();
-
-                // Clear the network
-                network.ResetState();
-
-                // Convert the game board into an input array for the network
-                for (int i = 0; i < nnInputs.Length; i++)
-                {
-                    network.InputSignalArray[i] = nnInputs[i];
-                }
-
-                // Activate the network
-                network.Activate();
-
-                // Find the best move
-                int maxIndex = 0;
-                double max = double.MinValue;
-                for (int i = 0; i < 3; i++)
-                {
-                    double score = network.OutputSignalArray[i];
-
-                    if (max < score)
-                    {
-                        max = score;
-                        maxIndex = i;
-                    }
-                }
-
-                // Make move
-                int move = game.GameMoves[maxIndex];
-                game.MakeMove(move);
-            }
-
-            return game.Score;
-        }
-
-        static void PrintGameState(IGame game, int[][] gameState)
-        {
-            Thread.Sleep(50);
-            Console.SetCursorPosition(0, 0);
-            for (int i = 0; i < game.WindowHeight; i++)
-            {
-                var line = new StringBuilder();
-                for (int j = 0; j < game.WindowWidth; j++)
-                {
-                    int objectValue = gameState[i][j];
-
-                    switch (objectValue)
-                    {
-                        case 0:
-                            line.Append(" ");
-                            break;
-                        case 1:
-                        case 2:
-                        case 3:
-                            line.Append("█");
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                Console.WriteLine(line.ToString());
+                var choosenGame = (GameMenuOption)choosenOption;
+                exit = NeatMenuLoop(choosenGame);
             }
         }
 
-        static void NeatAlgoUpdateEvent(object sender, EventArgs e)
+        static int ChooseGameMenu(out bool exit)
         {
-            var algo = (NeatEvolutionAlgorithm<NeatGenome>)sender;
+            exit = false;
 
-            Console.WriteLine(string.Format("gen={0:N0} bestFitness={1:N6}", algo.CurrentGeneration, algo.Statistics._maxFitness));
+            var gameNames = Enum.GetNames(typeof(GameMenuOption));
+            var menuNames = gameNames.Select(n => n + " Game").Concat(new string[] { "Exit" }).ToArray();
+
+            int option = ConsoleUtils.OptionsMenu("Please choose a game:", menuNames);
+            if (option == menuNames.Length)
+                exit = true;
+
+            return option;
+        }
+
+        static bool NeatMenuLoop(GameMenuOption gameOption)
+        {
+            var menuNames = new string[]
+            {
+                "Start learning session",
+                "Load learning session",
+                "Load AI player",
+                "Play game",
+                "Change game",
+                "Exit"
+            };
+            
+            bool exit = false;
+            bool backToPreviusMenu = false;
+            while (!exit && !backToPreviusMenu)
+            {
+                int option = ConsoleUtils.OptionsMenu("What action to perform:", menuNames);
+
+                if (option < menuNames.Length - 1)
+                    HandleNeatOption(option, gameOption);
+                else if (option == menuNames.Length)
+                    exit = true;
+                else
+                    backToPreviusMenu = true;
+            }
+
+            return exit;
+        }        
+
+        private static void HandleNeatOption(int menuOption, GameMenuOption gameOption)
+        {
+            // Save console window parameters before performing action
+            int windowHeight = Console.WindowHeight;
+            int windowWidth = Console.WindowWidth;
+            int windowLeft = Console.WindowLeft;
+            int windowTop = Console.WindowTop;
+
+            Console.Clear();
+
+            switch (menuOption)
+            {
+                case 1:
+                    NeatActions.StartLearningSession(gameOption);
+                    break;
+                case 2:
+                    NeatActions.LoadLearningSession(gameOption);
+                    break;
+                case 3:
+                    NeatActions.LoadAIPlayer(gameOption);
+                    break;
+                case 4:
+                    NeatActions.PlayGame(gameOption);
+                    break;
+                default:
+                    Console.Error.WriteLine("No such option!");
+                    break;
+            }
+
+            // Restore console window initial parameters
+            Console.SetWindowPosition(windowLeft, windowTop);
+            Console.SetWindowSize(windowWidth, windowHeight);
         }
     }
 }
