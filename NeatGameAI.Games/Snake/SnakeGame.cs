@@ -76,8 +76,8 @@ namespace NeatGameAI.Games.Snake
                 new Position(-1, 0), // up
             };
 
-            WindowWidth = 16;
-            WindowHeight = 16;
+            WindowWidth = 12;
+            WindowHeight = 12;
             maxStatesBeforeLastEat = WindowWidth * WindowHeight;
             Score = 0;
             lastDistance = double.MaxValue;
@@ -104,9 +104,9 @@ namespace NeatGameAI.Games.Snake
                 food.Col / (double)WindowWidth,
                 food.Row / (double)WindowHeight,
                 direction / 4.0,
-                obstacles.IsThereObstacleInFront ? -1.0 : 1.0,
-                obstacles.IsThereObstacleOnTheLeft ? -1.0 : 1.0,
-                obstacles.IsThereObstacleOnTheRight ? -1.0 : 1.0
+                obstacles.IsThereObstacleInFront ? -1.0 : 0.0,
+                obstacles.IsThereObstacleOnTheLeft ? -1.0 : 0.0,
+                obstacles.IsThereObstacleOnTheRight ? -1.0 : 0.0
             };
         }
 
