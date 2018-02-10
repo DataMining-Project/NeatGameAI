@@ -42,7 +42,10 @@ namespace NeatGameAI.Games.Snake
         int statesBeforeLastEat;
         double lastDistance;
 
-        Random rand = new Random();
+        static Random rand = new Random();
+        static List<Position> foodSpawns;
+        int foodSpawnIndex;
+
         private int[][] gameState;
         Queue<Position> snakeElements;
         Position snakeHead;
@@ -61,9 +64,8 @@ namespace NeatGameAI.Games.Snake
         {
             NeuralInputsCount = 8;
             NeuralOutputsCount = 5;
-            HasRandomEvents = true;
-
-            maxStatesBeforeLastEat = 500;
+            HasRandomEvents = false;
+           
             statesBeforeLastEat = 0;
 
             directions = new Position[]
@@ -74,8 +76,9 @@ namespace NeatGameAI.Games.Snake
                 new Position(-1, 0), // up
             };
 
-            WindowWidth = 32;
-            WindowHeight = 32;
+            WindowWidth = 16;
+            WindowHeight = 16;
+            maxStatesBeforeLastEat = WindowWidth * WindowHeight;
             Score = 0;
             lastDistance = double.MaxValue;
             IsGameOver = false;
@@ -96,14 +99,14 @@ namespace NeatGameAI.Games.Snake
 
             return new double[]
             {
-                RelativeDistanceToFood(),
                 snakeHead.Col / (double)WindowWidth,
                 snakeHead.Row / (double)WindowHeight,
-                obstacles.IsThereObstacleInFront ? -1.0 : 0.0,
-                obstacles.IsThereObstacleOnTheLeft ? -1.0 : 0.0,
-                obstacles.IsThereObstacleOnTheRight ? -1.0 : 0.0,
                 food.Col / (double)WindowWidth,
-                food.Row / (double)WindowHeight
+                food.Row / (double)WindowHeight,
+                direction / 4.0,
+                obstacles.IsThereObstacleInFront ? -1.0 : 1.0,
+                obstacles.IsThereObstacleOnTheLeft ? -1.0 : 1.0,
+                obstacles.IsThereObstacleOnTheRight ? -1.0 : 1.0
             };
         }
 
@@ -139,8 +142,6 @@ namespace NeatGameAI.Games.Snake
                     break;
             }
 
-            GivePointsIfDirectionIsCorrect((Direction)direction);
-
             MoveSnake();
         }
 
@@ -156,30 +157,33 @@ namespace NeatGameAI.Games.Snake
 
         private void InitializeGame()
         {
-            direction = (int)Direction.Right;
+            foodSpawnIndex = 0;
+            if (foodSpawns == null)
+            {
+                foodSpawns = new List<Position>();
+                for (int i = 0; i < WindowHeight; i++)
+                    for (int j = 0; j < WindowWidth; j++)
+                        foodSpawns.Add(new Position(i, j));
 
+                foodSpawns = foodSpawns.OrderBy(x => rand.Next()).ToList();
+            }
+
+            direction = (int)Direction.Right;
             snakeElements = new Queue<Position>();
-            var initialTailPosition = new Position(rand.Next(0, WindowHeight / 2), rand.Next(0, WindowWidth / 2));
+            var initialTailPosition = new Position(5, 5);
             snakeElements.Enqueue(initialTailPosition);
-            var initialHeadPosition = new Position(initialTailPosition.Row, initialTailPosition.Col + 1);
+            var initialHeadPosition = new Position(5, 6);
             snakeElements.Enqueue(initialHeadPosition);
             snakeHead = initialHeadPosition;
 
-            do
-            {
-                food = new Position(rand.Next(0, WindowHeight),
-                    rand.Next(0, WindowWidth));
-            }
-            while (snakeElements.Contains(food));
+            food = GetNextFoodPosition();
 
             previousMoveRelativeDistanceToFood = RelativeDistanceToFood();
 
             // Create initial game state
             gameState = new int[WindowHeight][];
             for (int i = 0; i < WindowHeight; i++)
-            {
                 gameState[i] = new int[WindowWidth];
-            }
 
             // Draw food
             gameState[food.Row][food.Col] = 1;
@@ -188,13 +192,9 @@ namespace NeatGameAI.Games.Snake
             foreach (Position position in snakeElements)
             {
                 if (position.Row != snakeHead.Row && position.Col != snakeHead.Col)
-                {
                     gameState[position.Row][position.Col] = 2;
-                }
                 else // draw the head
-                {
                     gameState[position.Row][position.Col] = 3;
-                }
             }
         }
 
@@ -223,15 +223,10 @@ namespace NeatGameAI.Games.Snake
 
             if (snakeNewHead.Col == food.Col && snakeNewHead.Row == food.Row)
             {
-                Score += 50;
-                lastDistance = double.MaxValue;
                 // Feeding the snake
-                do
-                {
-                    food = new Position(rand.Next(0, WindowHeight),
-                        rand.Next(0, WindowWidth));
-                }
-                while (snakeElements.Contains(food));
+                Score += 1000;
+                lastDistance = double.MaxValue;
+                food = GetNextFoodPosition();
 
                 // Draw food
                 gameState[food.Row][food.Col] = 1;
@@ -254,36 +249,22 @@ namespace NeatGameAI.Games.Snake
             }
         }
 
-        private void GivePointsIfDirectionIsCorrect(Direction chosenDir)
-        {
-            switch (chosenDir)
-            {
-                case Direction.Right:
-                    if (snakeHead.Col < food.Col)
-                        Score += 1;
-                    break;
-                case Direction.Left:
-                    if (snakeHead.Col > food.Col)
-                        Score += 1;
-                    break;
-                case Direction.Down:
-                    if (snakeHead.Row < food.Row)
-                        Score += 1;
-                    break;
-                case Direction.Up:
-                    if (snakeHead.Row > food.Row)
-                        Score += 1;
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private double RelativeDistanceToFood()
         {
             double dist = DistanceToFood();
             double maxDist = Math.Sqrt(Math.Pow(WindowHeight, 2) + Math.Pow(WindowWidth, 2));
             return (maxDist - dist) / maxDist;
+        }
+
+        private Position GetNextFoodPosition()
+        {
+            Position food;
+            do
+            {
+                food = foodSpawns[foodSpawnIndex++];
+            } while (snakeElements.Contains(food));
+
+            return food;
         }
 
         private double DistanceToFood()
