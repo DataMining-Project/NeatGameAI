@@ -267,7 +267,7 @@ namespace NeatGameAI.CUI
                     // Find the best move
                     int maxIndex = 0;
                     double max = double.MinValue;
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < game.NeuralOutputsCount; i++)
                     {
                         double score = network.OutputSignalArray[i];
 
