@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 
 namespace NeatGameAI.Games.Runner
 {
-    class RunnerGame : IGame
+    public class RunnerGame : IGame
     {
         private int blocksWidth;
         private int blocksHeight;
         private int jumpPos;
         private int jumpApex;
+        private bool hasDucked;
         private static Random rnd = new Random();
 
         private int[][] gameState;
@@ -29,6 +30,7 @@ namespace NeatGameAI.Games.Runner
         public double Score { get; private set; }
         public bool IsGameOver { get; private set; }
         public int[] GameMoves { get; private set; }
+        public char[] StateSymbols { get; private set; } 
 
         public RunnerGame()
         {
@@ -37,13 +39,16 @@ namespace NeatGameAI.Games.Runner
             HasRandomEvents = true;
 
             blocksWidth = 2;
-            blocksHeight = 1;
+            blocksHeight = 2;
             jumpPos = 0;
             jumpApex = 3;
+            hasDucked = false;
             WindowWidth = 30;
             WindowHeight = 6;
             Score = 0;
             IsGameOver = false;
+            StateSymbols = new char[] {' ','▒','█', '█'};
+
             GameMoves = Enum.GetValues(typeof(RunnerMove)).Cast<int>().ToArray();
 
             InitializeGame();
@@ -101,6 +106,11 @@ namespace NeatGameAI.Games.Runner
 
         public void MakeMove(int move)
         {
+            if (Score == 100000)
+            {
+                IsGameOver = true;
+                return;
+            }
             if (IsGameOver)
                 return;
 
@@ -109,30 +119,33 @@ namespace NeatGameAI.Games.Runner
             {
                 gameMove = (RunnerMove)move;
             }
-
+            hasDucked = false;
+            var oldPlayer = player;
             if (jumpPos == 0)
             {
                 player.Y = WindowHeight - 3;
                 player.Height = 2;
             }
-            else if (jumpPos > 0 && jumpPos < 3)
+            else if (jumpPos > 0 && jumpPos < jumpApex)
             {
-                var oldPlayer = player;
                 player.Y--;
                 jumpPos++;
-                RedrawRectangle(oldPlayer, player, 1);
             }
-            else if (jumpPos > 3)
+            else if (jumpPos == jumpApex)
             {
-                var oldPlayer = player;
+                jumpPos++;
+            }
+            else
+            {
                 player.Y++;
                 jumpPos++;
-                RedrawRectangle(oldPlayer, player, 1);
             }
 
-            if (jumpPos == jumpApex * 2)
+            bool justLanded = false;
+            if (jumpPos > jumpApex * 2)
             {
                 jumpPos = 0;
+                justLanded = true;
             }
 
             // Move the platform if needed
@@ -142,11 +155,9 @@ namespace NeatGameAI.Games.Runner
                     break;
                 case RunnerMove.Up:
                     //Score += 1;
-                    if (jumpPos == 0)
+                    if (jumpPos == 0 && !justLanded)
                     {
-                        gameState[player.Y][player.X] = 0;
                         player.Y = player.Y - 1;
-                        gameState[player.Y][player.X] = 1;
                         jumpPos++;
                     }
                     break;
@@ -154,70 +165,109 @@ namespace NeatGameAI.Games.Runner
                     //Score += 1;
                     if (jumpPos == 0)
                     {
-                        gameState[player.Y][player.X] = 0;
                         player.Y = player.Y + 1;
                         player.Height = 1;
-                        //gameState[player.Y][player.X] = 1;
+                        hasDucked = true;
                     }
                     break;
             }
+            //RedrawRectangle(oldPlayer, player, 1);
 
-
-            //Score += ((WindowWidth - ((platform.X + platformWidth / 2) - ball.X)) / (double)WindowWidth) * 10;
+            Score += 1;
 
             var oldBlock = block;
-            block.X--;
-            if(block.X < 0)
+            if (Score <= 1000)
+            {
+                block.X--;
+            }
+            else if (Score > 1000 && Score <= 5000)
+            {
+                block.X -= 2;
+            }
+            else
+            {
+                block.X -= 3;
+            }
+
+            if (block.X < 0)
             {
                 block = GenerateBlock();
             }
-            if (!IsPlayerHit(player,block))
+            if (!IsPlayerHit(player, block))
             {
-                RedrawRectangle(oldBlock, block, 2);
+                RedrawPlayerAndBlock(player, block);
             }
-            
+
         }
 
         public bool IsPlayerHit(Rectangle player, Rectangle block)
         {
+            bool upperBlock = (block.Y == WindowHeight - 4);
+
             if (jumpPos == 0)
             {
-                if (player.X == block.X && player.Height == 2 || block.Y == WindowHeight - 2)
+                if (player.X == block.X || player.X == block.X + 1)
                 {
-                    IsGameOver = true;
-                    return true;
+                    if (!hasDucked || !upperBlock)
+                    {
+                        IsGameOver = true;
+                        return true;
+                    }
+
                 }
             }
             else
             {
-                if (player.X == block.X && (player.Y + player.Height) >= block.Y)
+                if (player.X == block.X || player.X == block.X + 1)
                 {
-                    IsGameOver = true;
-                    return true;
+                    if (upperBlock || player.Y + 1 == block.Y)
+                    {
+                        IsGameOver = true;
+                        return true;
+                    }
                 }
             }
 
             return false;
         }
 
-
-        public void RedrawRectangle(Rectangle oldRect, Rectangle newRect, int num)
+        public void RedrawPlayerAndBlock(Rectangle player, Rectangle block)
         {
-            gameState[oldRect.Y][oldRect.X] = 0;
-            if (oldRect.Width == 2) gameState[oldRect.Y][oldRect.X + 1] = 0;
-            if (oldRect.Height == 2) gameState[oldRect.Y + 1][oldRect.X] = 0;
+            var blocksBehind = block.X + 5;
+            if(blocksBehind > WindowWidth)
+            {
+                blocksBehind = WindowWidth;
+            }
 
-            gameState[newRect.Y][newRect.X] = num;
-            if (newRect.Width == 2) gameState[newRect.Y][newRect.X + 1] = num;
-            if (newRect.Height == 2) gameState[newRect.Y + 1][newRect.X] = num;
+            for (int i = 0; i <= WindowHeight - 2; i++)
+            {
+                for (int j = 0; j <= player.X; j++)
+                {
+                    gameState[i][j] = 0;
+                }
+                for (int j=block.X; j < blocksBehind; j++)
+                {
+                    gameState[i][j] = 0;
+                }
+            }
+            gameState[player.Y][player.X] = 1;
+            if (player.Height == 2) gameState[player.Y + 1][player.X] = 1;
+
+            //bool upperBlock = (block.Y == WindowHeight - 3);
+
+            gameState[block.Y][block.X] = 2;
+            gameState[block.Y][block.X + 1] = 2;
+            gameState[block.Y + 1][block.X] = 2;
+            gameState[block.Y + 1][block.X + 1] = 2;
         }
+
         public Rectangle GenerateBlock()
         {
             if (rnd.NextDouble() < 0.5)
             {
-                return new Rectangle(WindowWidth - 2, WindowHeight - 2, 2, 1);
+                return new Rectangle(WindowWidth - 2, WindowHeight - 3, blocksWidth, blocksHeight);
             }
-            else return new Rectangle(WindowWidth - 2, WindowHeight - 3, 2, 1);
+            else return new Rectangle(WindowWidth - 2, WindowHeight - 4, blocksWidth, blocksHeight);
         }
 
         public IGame NewGame()
