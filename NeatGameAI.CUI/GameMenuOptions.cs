@@ -2,6 +2,7 @@
 {
     public enum GameMenuOption
     {
-        Breakout = 1
+        Breakout = 1,
+        Runner = 2
     }
 }
