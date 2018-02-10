@@ -58,6 +58,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runner\RunnerGame.cs" />
     <Compile Include="Runner\RunnerMove.cs" />
+    <Compile Include="Snake\SnakeGame.cs" />
+    <Compile Include="Snake\SnakeMove.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

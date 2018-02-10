@@ -220,7 +220,7 @@ namespace NeatGameAI.CUI
             // Save console window parameters and change them for the game
             var windowWidth = Console.WindowWidth;
             var windowHeight = Console.WindowHeight;
-            Console.WindowWidth = game.WindowWidth;
+            Console.WindowWidth = game.WindowWidth * 2;
             Console.WindowHeight = game.WindowHeight + 6;
 
             bool exit = false;
@@ -287,7 +287,7 @@ namespace NeatGameAI.CUI
                 Console.CursorVisible = true;
 
                 if (interupted)
-                    Console.WriteLine($"Gameplay interepted! Last score was: {game.Score:N2}");
+                    Console.WriteLine($"Gameplay interrupted! Last score was: {game.Score:N2}");
                 else
                     Console.WriteLine($"Game over, AI score was: {game.Score:N2}");
                 
@@ -357,7 +357,7 @@ namespace NeatGameAI.CUI
             // Save console window parameters and change them for the game
             var windowWidth = Console.WindowWidth;
             var windowHeight = Console.WindowHeight;
-            Console.WindowWidth = game.WindowWidth;
+            Console.WindowWidth = game.WindowWidth * 2;
             Console.WindowHeight = game.WindowHeight + 6;
             
             bool exit = false;
@@ -392,7 +392,7 @@ namespace NeatGameAI.CUI
                 if (interupted)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.WriteLine($"Gameplay interepted! Your score was: {game.Score:N2}");
+                    Console.WriteLine($"Gameplay interrupted! Your score was: {game.Score:N2}");
                 }                    
                 else
                     Console.WriteLine($"Game over, Your score was: {game.Score:N2}");
@@ -438,8 +438,10 @@ namespace NeatGameAI.CUI
                     {
                         case 0:
                             line.Append(" ");
+                            line.Append(" ");
                             break;
                         default:
+                            line.Append("█");
                             line.Append("█");
                             break;
                     }

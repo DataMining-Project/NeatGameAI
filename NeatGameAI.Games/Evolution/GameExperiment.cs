@@ -101,7 +101,7 @@ namespace NeatGameAI.Games.Evolution
 
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(IGenomeFactory<NeatGenome> genomeFactory, List<NeatGenome> genomeList)
         {
-            // Create distance metric. Mismatched genes have a fixed distance of 10; for matched genes the distance is their weigth difference.
+            // Create distance metric. Mismatched genes have a fixed distance of 10; for matched genes the distance is their weight difference.
             IDistanceMetric distanceMetric = new ManhattanDistanceMetric(1.0, 0.0, 10.0);
 
             // Create speciation strategy.
@@ -124,8 +124,8 @@ namespace NeatGameAI.Games.Evolution
             // Create a genome2 list evaluator. This packages up the genome2 decoder with the genome2 evaluator.
             IGenomeListEvaluator<NeatGenome> genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, PhenomeEvaluator, parallelOptions);
 
-            // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
-            // that were in the population in previous generations (elite genomes). This is determiend by examining each genome2's evaluation info object.
+            // Wrap the list evaluator in a 'selective' evaluator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
+            // that were in the population in previous generations (elite genomes). This is determined by examining each genome2's evaluation info object.
             if (!EvaluateParents)
                 genomeListEvaluator = new SelectiveGenomeListEvaluator<NeatGenome>(genomeListEvaluator,
                                          SelectiveGenomeListEvaluator<NeatGenome>.CreatePredicate_OnceOnly());

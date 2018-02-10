@@ -44,7 +44,7 @@ namespace NeatGameAI.Games.Breakout
 
             platformWidth = 12;
             blockRows = 6;
-            blockCols = 10;
+            blockCols = 8;
             blocksWidth = 6;
             blocksHeigth = 2;
             blocksSpaceTop = 6;
@@ -148,7 +148,7 @@ namespace NeatGameAI.Games.Breakout
 
         private void MoveBall()
         {
-            // Check if ball have block neighbours, remove them and update direction
+            // Check if ball have block neighbors, remove them and update direction
             RemoveAdjacentBlocks();
 
             // Calculate new ball position
@@ -422,7 +422,7 @@ namespace NeatGameAI.Games.Breakout
                     else
                         newAngle = BallAngle.RigthSharp;
                 }
-                else // if right in the middle change direction of comming ball
+                else // if right in the middle change direction of coming ball
                 {
                     int newDirection = (int)newAngle < 0 ? 1 : -1;
                     newAngle = (BallAngle)((int)BallAngle.RigthSharp * newDirection);
@@ -542,7 +542,7 @@ namespace NeatGameAI.Games.Breakout
                 blocksToRemove.Add(blockIndexes[ball.Y + 1 - blocksSpaceTop][ball.X + 1]);
             }
 
-            // Calulate new ball position
+            // Calculate new ball position
             //if (topLeftOverlap && topRightOverlap && bottomLeftOverlap)
             //{
             //    ball.X += 2;
