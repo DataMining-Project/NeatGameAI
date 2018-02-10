@@ -17,6 +17,8 @@ namespace NeatGameAI.Games.Breakout
         private int movesPerBallMove;
         private int movesUntilBallMove;
         private int blocksLeft;
+        private int platformHitsWithoutBreak;
+        private int maxPlatformHitsBeforeBreak;
 
         private int[][] gameState;
         private Rectangle ball;
@@ -35,6 +37,7 @@ namespace NeatGameAI.Games.Breakout
         public double Score { get; private set; }
         public bool IsGameOver { get; private set; }
         public int[] GameMoves { get; private set; }
+        public char[] StateSymbols { get; private set; }
 
         public BreakoutGame()
         {
@@ -49,6 +52,9 @@ namespace NeatGameAI.Games.Breakout
             blocksHeigth = 2;
             blocksSpaceTop = 6;
 
+            maxPlatformHitsBeforeBreak = 25;
+            platformHitsWithoutBreak = 0;
+
             movesPerBallMove = 2;
             movesUntilBallMove = movesPerBallMove;
 
@@ -57,6 +63,8 @@ namespace NeatGameAI.Games.Breakout
             WindowHeight = 40;
             Score = 0;
             IsGameOver = false;
+            StateSymbols = new char[] { ' ', '▒', '█', '▓' };
+
             GameMoves = Enum.GetValues(typeof(BreakoutMove)).Cast<int>().ToArray();
 
             InitializeGame();
@@ -80,6 +88,9 @@ namespace NeatGameAI.Games.Breakout
 
         public void MakeMove(int move)
         {
+            if (platformHitsWithoutBreak >= maxPlatformHitsBeforeBreak)
+                IsGameOver = true;
+
             if (blocksLeft == 0)
                 IsGameOver = true;
 
@@ -142,6 +153,7 @@ namespace NeatGameAI.Games.Breakout
 
         private void UpdateBrokenBlocks(int blocks)
         {
+            platformHitsWithoutBreak = 0;
             blocksLeft -= blocks;
             Score += blocks * 3;
         }
@@ -167,6 +179,7 @@ namespace NeatGameAI.Games.Breakout
                     DrawBallOnNewPosition(ball, newBall);
                     return;
                 }
+                else platformHitsWithoutBreak++;
             }
 
             bool leftBoundHit = false;

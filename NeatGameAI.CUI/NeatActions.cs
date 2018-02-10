@@ -241,7 +241,7 @@ namespace NeatGameAI.CUI
                     // Get game state
                     var gameState = game.GetCurrentState(out _);
 
-                    PrintGameState(game, gameState, 25);
+                    PrintGameState(game, gameState, 50);
 
                     // Check for key input
                     if (Console.KeyAvailable)
@@ -370,7 +370,7 @@ namespace NeatGameAI.CUI
                 bool interupted = false;
                 while (!game.IsGameOver && !interupted)
                 {
-                    PrintGameState(game, game.GetCurrentState(out _), 50,  true);
+                    PrintGameState(game, game.GetCurrentState(out _), 75,  true);
                     int move = 0;
                     while (Console.KeyAvailable)
                     {
@@ -433,18 +433,10 @@ namespace NeatGameAI.CUI
                 for (int j = 0; j < game.WindowWidth; j++)
                 {
                     int objectValue = gameState[i][j];
+                    char objectChar = game.StateSymbols[objectValue];
 
-                    switch (objectValue)
-                    {
-                        case 0:
-                            line.Append(" ");
-                            line.Append(" ");
-                            break;
-                        default:
-                            line.Append("█");
-                            line.Append("█");
-                            break;
-                    }
+                    line.Append(objectChar);
+                    line.Append(objectChar);
                 }
                 Console.WriteLine(line.ToString());
             }

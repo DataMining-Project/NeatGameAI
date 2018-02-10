@@ -59,6 +59,7 @@ namespace NeatGameAI.Games.Snake
         public double Score { get; private set; }
         public bool IsGameOver { get; private set; }
         public int[] GameMoves { get; private set; }
+        public char[] StateSymbols { get; private set; }
 
         public SnakeGame()
         {
@@ -82,6 +83,8 @@ namespace NeatGameAI.Games.Snake
             Score = 0;
             lastDistance = double.MaxValue;
             IsGameOver = false;
+            StateSymbols = new char[] { ' ', '▒', '▓', '█' };
+
             GameMoves = Enum.GetValues(typeof(SnakeMove)).Cast<int>().ToArray();
 
             InitializeGame();

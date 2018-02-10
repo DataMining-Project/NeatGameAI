@@ -10,6 +10,7 @@
         double Score { get; }
         bool IsGameOver { get; }
         int[] GameMoves { get; }
+        char[] StateSymbols { get; }
 
         int[][] GetCurrentState(out bool over);
         double[] GetNeuralInputs();
