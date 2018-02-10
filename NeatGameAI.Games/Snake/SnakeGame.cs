@@ -200,7 +200,6 @@ namespace NeatGameAI.Games.Snake
 
         private void MoveSnake()
         {
-            snakeHead = snakeElements.Last();
             Position nextDirection = directions[direction];
             Position snakeNewHead = new Position(snakeHead.Row + nextDirection.Row, snakeHead.Col + nextDirection.Col);
 
@@ -225,6 +224,12 @@ namespace NeatGameAI.Games.Snake
             {
                 // Feeding the snake
                 Score += 1000;
+                if (WindowHeight * WindowWidth == snakeElements.Count)
+                {
+                    IsGameOver = true;
+                    return;
+                }
+
                 lastDistance = double.MaxValue;
                 food = GetNextFoodPosition();
 
@@ -249,27 +254,32 @@ namespace NeatGameAI.Games.Snake
             }
         }
 
-        private double RelativeDistanceToFood()
-        {
-            double dist = DistanceToFood();
-            double maxDist = Math.Sqrt(Math.Pow(WindowHeight, 2) + Math.Pow(WindowWidth, 2));
-            return (maxDist - dist) / maxDist;
-        }
-
         private Position GetNextFoodPosition()
         {
             Position food;
             do
             {
+                if (foodSpawnIndex == foodSpawns.Count)
+                    foodSpawnIndex = 0;
+
                 food = foodSpawns[foodSpawnIndex++];
             } while (snakeElements.Contains(food));
 
             return food;
         }
 
+        private double RelativeDistanceToFood()
+        {
+            double dist = DistanceToFood();
+            //double maxDist = Math.Sqrt(Math.Pow(WindowHeight, 2) + Math.Pow(WindowWidth, 2));
+            double maxDist = WindowWidth + WindowHeight;
+            return (maxDist - dist) / maxDist;
+        }
+
         private double DistanceToFood()
         {
-            double dist = Math.Sqrt(Math.Pow(food.Col - snakeHead.Col, 2) + Math.Pow(food.Row - snakeHead.Row, 2));
+            //double dist = Math.Sqrt(Math.Pow(food.Col - snakeHead.Col, 2) + Math.Pow(food.Row - snakeHead.Row, 2));
+            double dist = Math.Abs(food.Col - snakeHead.Col) + Math.Abs(food.Row - snakeHead.Row);
             return dist;
         }
 
