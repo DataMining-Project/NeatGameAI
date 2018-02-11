@@ -317,6 +317,7 @@ namespace NeatGameAI.CUI
             var doc = NeatGenomeXmlIO.SaveComplete(neatAlgo.GenomeList, false);
             doc.Save(xw);
             xw.Flush();
+            xw.Close();
         }
 
         private static void SaveBestGenome(NeatEvolutionAlgorithm<NeatGenome> neatAlgo, string gameName)
@@ -332,6 +333,7 @@ namespace NeatGameAI.CUI
             var doc = NeatGenomeXmlIO.SaveComplete(genome, false);
             doc.Save(xw);
             xw.Flush();
+            xw.Close();
         }
 
         private static NeatEvolutionAlgorithm<NeatGenome> LoadPopulation(GameExperiment gameExperiment, string gameName, string fullFileName)
@@ -340,6 +342,7 @@ namespace NeatGameAI.CUI
             var genomeFactory = gameExperiment.CreateGenomeFactory();
             var genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, (NeatGenomeFactory)genomeFactory);
             var neatAlgo = gameExperiment.CreateEvolutionAlgorithm(genomeFactory, genomeList);
+            xr.Close();
             return neatAlgo;
         }
 
@@ -349,6 +352,7 @@ namespace NeatGameAI.CUI
             var genomeFactory = gameExperiment.CreateGenomeFactory();
             var genomeList = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, false, (NeatGenomeFactory)genomeFactory);
             var genome = genomeList[0];
+            xr.Close();
             return genome;
         }
 
