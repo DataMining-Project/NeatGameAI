@@ -10,6 +10,9 @@ namespace NeatGameAI.Games.Runner
 {
     public class RunnerGame : IGame
     {
+        private int gameLength;
+        private int firstStage;
+        private int secondStage;
         private int blocksWidth;
         private int blocksHeight;
         private int jumpPos;
@@ -37,6 +40,10 @@ namespace NeatGameAI.Games.Runner
             NeuralInputsCount = 3;
             NeuralOutputsCount = 3;
             HasRandomEvents = true;
+            gameLength = 2000;
+            firstStage = 300;
+            secondStage = 900;
+
 
             blocksWidth = 2;
             blocksHeight = 2;
@@ -108,7 +115,7 @@ namespace NeatGameAI.Games.Runner
 
         public void MakeMove(int move)
         {
-            if (Score == 100000)
+            if (Score == gameLength)
             {
                 IsGameOver = true;
                 return;
@@ -178,11 +185,11 @@ namespace NeatGameAI.Games.Runner
             Score += 1;
 
             var oldBlock = block;
-            if (Score <= 1000)
+            if (Score <= firstStage)
             {
                 block.X--;
             }
-            else if (Score > 1000 && Score <= 5000)
+            else if (Score > firstStage && Score <= secondStage)
             {
                 block.X -= 2;
             }
