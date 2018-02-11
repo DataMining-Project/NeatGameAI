@@ -47,7 +47,7 @@ namespace NeatGameAI.Games.Breakout
 
             platformWidth = 12;
             blockRows = 6;
-            blockCols = 8;
+            blockCols = 10;
             blocksWidth = 6;
             blocksHeigth = 2;
             blocksSpaceTop = 6;
@@ -80,9 +80,9 @@ namespace NeatGameAI.Games.Breakout
         {
             return new double[]
             {
-                (double)ball.Y / WindowHeight,
-                (double)ball.X / WindowWidth,
-                (double)(platform.X + platform.Width / 2) / WindowWidth
+                ((double)ball.Y / WindowHeight) * 2 - 1,
+                ((double)ball.X / WindowWidth) * 2 - 1,
+                ((double)(platform.X + platform.Width / 2) / WindowWidth) * 2 - 1
             };
         }
 

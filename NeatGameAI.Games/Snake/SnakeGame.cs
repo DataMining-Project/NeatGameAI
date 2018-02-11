@@ -102,11 +102,11 @@ namespace NeatGameAI.Games.Snake
 
             return new double[]
             {
-                snakeHead.Col / (double)WindowWidth,
-                snakeHead.Row / (double)WindowHeight,
-                food.Col / (double)WindowWidth,
-                food.Row / (double)WindowHeight,
-                direction / 4.0,
+                (snakeHead.Col / (double)WindowWidth) * 2 - 1,
+                (snakeHead.Row / (double)WindowHeight) * 2 - 1,
+                (food.Col / (double)WindowWidth) * 2 - 1,
+                (food.Row / (double)WindowHeight) * 2 - 1,
+                (direction / 4.0) * 2 - 1,
                 obstacles.IsThereObstacleInFront ? -1.0 : 0.0,
                 obstacles.IsThereObstacleOnTheLeft ? -1.0 : 0.0,
                 obstacles.IsThereObstacleOnTheRight ? -1.0 : 0.0
