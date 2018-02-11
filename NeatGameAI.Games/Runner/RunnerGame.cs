@@ -95,7 +95,9 @@ namespace NeatGameAI.Games.Runner
 
             // Draw block
             gameState[block.Y][block.X] = 2;
+            gameState[block.Y - 1][block.X] = 2;
             gameState[block.Y][block.X + 1] = 2;
+            gameState[block.Y - 1][block.X + 1] = 2;
 
             // Draw platform
             for (int i = 0; i < WindowWidth; i++)
